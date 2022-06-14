@@ -1,0 +1,39 @@
+<!-- <a
+    (click)="open(content)"
+    [attr.aria-expanded]="!isCollapsed"
+    aria-controls="collapseExample"
+>
+    <i-feather name="{{icon}}" class="feather"></i-feather></a
+><ng-template #content let-modal>
+    <div class="modal-header">
+        <h2 class="modal-title">{{this.title}}</h2>
+        <button
+            type="button"
+            class="close"
+            aria-label="Close"
+            (click)="modal.dismiss('Cross click')"
+        >
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <ul *ngIf="errors">
+            <li *ngFor="let error of errors|keyvalue">
+                {{error.key}}:{{error.value|json}}
+            </li>
+        </ul>
+        <core-json-edit mode="tree" [data]="data"></core-json-edit>
+        <div class="modal-footer flex-row-reverse justify-content-between">
+            <button mat-flat-button color="primary" (click)="onSave()">
+                Save
+            </button>
+            <a
+                mat-flat-button
+                color="warn"
+                *ngIf="hasDelete"
+                (click)="deleteItem()"
+                >Delete</a
+            >
+        </div>
+    </div>
+</ng-template> -->

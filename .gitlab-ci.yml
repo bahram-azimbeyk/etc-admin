@@ -1,0 +1,11 @@
+deploy:
+    variables:
+        GIT_STRATEGY: none
+        GIT_CHECKOUT: "false"
+    stage: deploy
+    script:
+        - cd /home/sesota/admin
+        - git pull
+        # - ng build --base-href http://45.149.79.70:80
+        - ng build --prod
+    tags: [test]

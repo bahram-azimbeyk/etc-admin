@@ -1,0 +1,107 @@
+<p mat-dialog-title class="h3 text-right">Add Component</p>
+<div mat-dialog-content class="my-5">
+  <mat-form-field *ngIf="!schemaForm">
+    <mat-label>Schema</mat-label>
+    <input
+      type="text"
+      matInput
+      [formControl]="schemaControl"
+      [matAutocomplete]="auto"
+      required="true"
+    />
+    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+      <mat-option
+        *ngFor="let option of filteredSchemas | async"
+        [value]="option"
+        (click)="onSelect(option)"
+      >
+        {{option.name}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+  <form
+    *ngIf="schemaForm"
+    class="d-flex flex-column"
+    [formGroup]="schemaForm"
+    novalidate
+  >
+    <ul *ngIf="errors">
+      <li *ngFor="let error of errors|keyvalue">
+        {{error.key}}:{{error.value|json}}
+      </li>
+    </ul>
+    <div class="d-flex flex-column">
+      <div *ngFor="let input of schemaFormJson.components" class="col">
+        <div *ngIf="['select'].includes(input.input_type)" class="form-group">
+          <mat-form-field appearance="fill">
+            <mat-label>{{input.name}}</mat-label>
+            <select
+              matNativeControl
+              name="{{input.name}}"
+              formControlName="{{input.name}}"
+              required="{{input.required}}"
+              value="{{input.value}}"
+            >
+              <option
+                *ngFor="let option of input.components"
+                value="{{option}}"
+              >
+                {{option}}
+              </option>
+            </select>
+          </mat-form-field>
+        </div>
+        <div
+          *ngIf="['text'].includes(input.input_type) && input.name.startsWith('text')"
+          class="form-group"
+        >
+          <mat-form-field>
+            <mat-label>{{input.name}}</mat-label
+            ><textarea
+              matInput
+              formControlName="{{input.name}}"
+              class="form-control"
+              name="{{input.name}}"
+              placeholder="{{input.placeholder}}"
+              required="{{input.required}}"
+              autocomplete="on"
+            ></textarea>
+          </mat-form-field>
+        </div>
+        <div
+          *ngIf="['text'].includes(input.input_type) && !input.name.startsWith('text')"
+          class="form-group"
+        >
+          <mat-form-field>
+            <mat-label>{{input.name}}</mat-label
+            ><input
+              matInput
+              formControlName="{{input.name}}"
+              type="{{input.input_type}}"
+              class="form-control"
+              name="{{input.name}}"
+              pattern="{{input.pattern}}"
+              placeholder="{{input.placeholder}}"
+              required="{{input.required}}"
+              autocomplete="on"
+            />
+          </mat-form-field>
+        </div>
+        <div *ngIf="['checkbox'].includes(input.input_type)" class="form-group">
+          <mat-checkbox
+            formControlName="{{input.name}}"
+            class="form-control"
+            name="{{input.name}}"
+            required="{{input.required}}"
+            >{{input.name}}</mat-checkbox
+          >
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+<div mat-dialog-actions *ngIf="schemaForm" class="d-flex justify-content-start">
+  <button mat-raised-button class="ms-auto" color="primary" (click)="onSave()">
+    Save
+  </button>
+</div>

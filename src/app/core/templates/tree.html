@@ -1,0 +1,224 @@
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="tree">
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+    <!-- if component is a reference -->
+    <li
+      *ngIf="node.component.is_reference"
+      class="mat-tree-node d-flex justify-content-between"
+      (contextmenu)="onContextMenu($event, trigger)"
+    >
+      <button mat-icon-button [disableRipple]="true">
+        <mat-icon
+          *ngIf="node.component.is_reference"
+          class="mat-icon-rtl-mirror"
+          >link</mat-icon
+        >
+        <mat-icon>text_snippet</mat-icon>
+        {{node.name}}
+      </button>
+      <div
+        style="visibility: hidden; position: fixed"
+        [style.left.px]="contextMenuPosition.x"
+        [style.top.px]="contextMenuPosition.y"
+        #trigger="matMenuTrigger"
+        [matMenuTriggerFor]="menu"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </div>
+
+      <mat-menu #menu="matMenu">
+        <button
+          mat-menu-item
+          (click)="openRefOriginalWindow(node.component.id)"
+        >
+          <mat-icon>preview</mat-icon>
+          <span>Original Window</span>
+        </button>
+        <button
+          mat-menu-item
+          (click)="removeRefComponent(node)"
+          [disabled]="isRefDisabled(node)"
+        >
+          <mat-icon>remove</mat-icon>
+          <span>Remove</span>
+        </button>
+      </mat-menu>
+    </li>
+    <!-- if component is not a reference -->
+    <li
+      *ngIf="!node.component.is_reference"
+      class="mat-tree-node d-flex justify-content-between"
+      (contextmenu)="onContextMenu($event, trigger)"
+    >
+      <button
+        mat-icon-button
+        [disableRipple]="true"
+        (click)="openComponentEditDialog(node.component)"
+      >
+        <mat-icon
+          *ngIf="node.component.is_reference"
+          class="mat-icon-rtl-mirror"
+          >link</mat-icon
+        >
+        <mat-icon>text_snippet</mat-icon>
+        {{node.name}}
+      </button>
+      <div
+        style="visibility: hidden; position: fixed"
+        [style.left.px]="contextMenuPosition.x"
+        [style.top.px]="contextMenuPosition.y"
+        #trigger="matMenuTrigger"
+        [matMenuTriggerFor]="menu"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </div>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="openComponentEditDialog(node.component)">
+          <mat-icon>create</mat-icon>
+          <span>Edit Component</span>
+        </button>
+        <button mat-menu-item (click)="openComponentAddDialog(node.component)">
+          <mat-icon>add</mat-icon>
+          <span>Add Component</span>
+        </button>
+        <button mat-menu-item (click)="copy(node.component)">
+          <mat-icon>content_copy</mat-icon>
+          <span>Copy Component</span>
+        </button>
+        <button
+          mat-menu-item
+          [disabled]="!clipboardService.showClipboard()"
+          (click)="paste(node.component)"
+        >
+          <mat-icon>content_paste</mat-icon>
+          <span>Paste Component</span>
+        </button>
+        <button
+          mat-menu-item
+          [disabled]="!clipboardService.showClipboard()"
+          (click)="paste(node.component, true)"
+        >
+          <mat-icon>flip_to_back</mat-icon>
+          <span>Paste Ref Component</span>
+        </button>
+      </mat-menu>
+    </li>
+  </mat-tree-node>
+  <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+    <li
+      *ngIf="node.component.is_reference"
+      class="mat-tree-node d-flex justify-content-between"
+      (contextmenu)="onContextMenu($event, trigger)"
+    >
+      <button
+        mat-icon-button
+        [disableRipple]="true"
+        matTreeNodeToggle
+        (click)="saveExpandedStates(node)"
+      >
+        <mat-icon class="mat-icon-rtl-mirror">
+          {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+        </mat-icon>
+        <mat-icon
+          *ngIf="node.component.is_reference"
+          class="mat-icon-rtl-mirror"
+          >link</mat-icon
+        >
+        <mat-icon class="mat-icon-rtl-mirror">
+          {{treeControl.isExpanded(node) ? 'folder_open' : 'folder'}}
+        </mat-icon>
+        {{node.name}}
+      </button>
+      <div
+        style="visibility: hidden; position: fixed"
+        [style.left.px]="contextMenuPosition.x"
+        [style.top.px]="contextMenuPosition.y"
+        #trigger="matMenuTrigger"
+        [matMenuTriggerFor]="menu"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </div>
+
+      <mat-menu #menu="matMenu">
+        <button
+          mat-menu-item
+          (click)="openRefOriginalWindow(node.component.id)"
+        >
+          <mat-icon>preview</mat-icon>
+          <span>Original Window</span>
+        </button>
+        <button
+          mat-menu-item
+          (click)="removeRefComponent(node)"
+          [disabled]="isRefDisabled(node)"
+        >
+          <mat-icon>remove</mat-icon>
+          <span>Remove</span>
+        </button>
+      </mat-menu>
+    </li>
+    <li
+      *ngIf="!node.component.is_reference"
+      class="mat-tree-node d-flex justify-content-between"
+      (contextmenu)="onContextMenu($event, trigger)"
+    >
+      <button
+        mat-icon-button
+        [disableRipple]="true"
+        matTreeNodeToggle
+        (click)="saveExpandedStates(node)"
+      >
+        <mat-icon class="mat-icon-rtl-mirror">
+          {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+        </mat-icon>
+        <mat-icon
+          *ngIf="node.component.is_reference"
+          class="mat-icon-rtl-mirror"
+          >link</mat-icon
+        >
+        <mat-icon class="mat-icon-rtl-mirror">
+          {{treeControl.isExpanded(node) ? 'folder_open' : 'folder'}}
+        </mat-icon>
+        {{node.name}}
+      </button>
+      <div
+        style="visibility: hidden; position: fixed"
+        [style.left.px]="contextMenuPosition.x"
+        [style.top.px]="contextMenuPosition.y"
+        #trigger="matMenuTrigger"
+        [matMenuTriggerFor]="menu"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </div>
+
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="openComponentEditDialog(node.component)">
+          <mat-icon>create</mat-icon>
+          <span>Edit Component</span>
+        </button>
+        <button mat-menu-item (click)="openComponentAddDialog(node.component)">
+          <mat-icon>add</mat-icon>
+          <span>Add Component</span></button
+        ><button mat-menu-item (click)="copy(node.component)">
+          <mat-icon>content_copy</mat-icon>
+          <span>Copy Component</span>
+        </button>
+        <button
+          mat-menu-item
+          [disabled]="!clipboardService.showClipboard()"
+          (click)="paste(node.component)"
+        >
+          <mat-icon>content_paste</mat-icon>
+          <span>Paste Component</span>
+        </button>
+        <button
+          mat-menu-item
+          [disabled]="!clipboardService.showClipboard()"
+          (click)="paste(node.component, true)"
+        >
+          <mat-icon>flip_to_back</mat-icon>
+          <span>Paste Ref Component</span>
+        </button>
+      </mat-menu>
+    </li>
+  </mat-tree-node>
+</mat-tree>

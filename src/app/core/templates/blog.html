@@ -1,0 +1,225 @@
+<style>
+  textarea#mentions {
+    height: 350px;
+  }
+
+  div.card,
+  .tox div.card {
+    width: 240px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-shadow: 0 4px 8px 0 rgba(34, 47, 62, 0.1);
+    padding: 8px;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  }
+
+  div.card::after,
+  .tox div.card::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+
+  div.card h1,
+  .tox div.card h1 {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0 0 8px;
+    padding: 0;
+    line-height: normal;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  }
+
+  div.card p,
+  .tox div.card p {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  }
+
+  div.card img.avatar,
+  .tox div.card img.avatar {
+    width: 48px;
+    height: 48px;
+    margin-right: 8px;
+    float: left;
+  }
+</style>
+
+<div class="p-5">
+  <mat-card class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+      <mat-card-header>
+        <div mat-card-avatar>
+          <mat-icon>web</mat-icon>
+        </div>
+        <mat-card-title>Blog Editor</mat-card-title>
+      </mat-card-header>
+      <div class="ms-auto d-flex flex-column">
+        <button
+          *ngIf="!loading"
+          mat-raised-button
+          class="mb-1"
+          color="primary"
+          (click)="onSave()"
+          [class.spinner]="uploading"
+          [disabled]="deleting"
+        >
+          Save
+        </button>
+        <button
+          *ngIf="!loading"
+          mat-raised-button
+          class="mb-1"
+          color="warn"
+          (click)="deleteItem()"
+          [class.spinner]="deleting"
+          [disabled]="uploading"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="slug && loading">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+    <form *ngIf="!loading" [formGroup]="blogForm" (ngSubmit)="onSave()">
+      <div class="d-flex flex-wrap">
+        <mat-form-field class="mb-2" appearance="outline">
+          <mat-label>Title</mat-label>
+          <input
+            matInput
+            class="form-control"
+            formControlName="title"
+            required
+            autocomplete="off"
+          />
+          <mat-error *ngIf="blogForm.invalid"> Title is required </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-6" appearance="outline">
+          <mat-label> Slug </mat-label>
+          <input
+            matInput
+            autocomplete="off"
+            class="form-control"
+            formControlName="slug"
+            required
+          />
+          <mat-error *ngIf="blogForm.invalid">
+            Please enter a valid slug address
+          </mat-error>
+        </mat-form-field>
+        <div class="col-6 ps-3 d-flex flex-wrap">
+          <div class="d-flex col-12">
+            <label class="me-2 my-auto" style="opacity: 0.7">Banner:</label>
+            <input
+              class="col my-auto form-text"
+              accept="image/*"
+              name="banner"
+              [formControl]="banner"
+              type="file"
+              (change)="onFileChange($event)"
+            />
+          </div>
+          <a
+            *ngIf="bannerLink"
+            target="_blank"
+            href="{{ mediaUrl + bannerLink }}"
+            class="col-12"
+            >{{bannerLink}}</a
+          >
+        </div>
+        <mat-form-field class="col-12" appearance="outline">
+          <mat-label>Description</mat-label>
+          <textarea
+            matInput
+            formControlName="description"
+            autocomplete="off"
+          ></textarea>
+          <mat-error *ngIf="blogForm.invalid">
+            Description must be no longer than 500 characters
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-6" appearance="outline">
+          <mat-label>Parents Categories</mat-label>
+          <mat-select
+            formControlName="parentscategories"
+            (selectionChange)="fillCategories($event.value)"
+          >
+            <mat-option
+              *ngFor="let cat of allCategories?.sub_categories "
+              value="{{cat.name}}"
+            >
+              {{cat.name}}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="blogForm.invalid"> Title is required </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-6" appearance="outline">
+          <mat-label>Categories</mat-label>
+          <mat-select formControlName="categories">
+            <mat-option
+              *ngFor="let cat of categoryOptions "
+              value="{{cat.name}}"
+            >
+              {{cat.name}}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="blogForm.invalid"> Title is required </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-12" appearance="outline">
+          <mat-label>Tags</mat-label>
+          <mat-chip-list
+            #chipList
+            aria-label="Tag selection"
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            (cdkDropListDropped)="drop($event)"
+          >
+            <mat-chip
+              *ngFor="let tag of blogTags"
+              [selectable]="selectable"
+              [removable]="removable"
+              (removed)="remove(tag)"
+              cdkDrag
+            >
+              {{tag}}
+              <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+            </mat-chip>
+            <input
+              placeholder="New tag..."
+              #tagInput
+              [formControl]="tagCtrl"
+              [matAutocomplete]="auto"
+              [matChipInputFor]="chipList"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              (matChipInputTokenEnd)="add($event)"
+            />
+          </mat-chip-list>
+          <mat-autocomplete
+            #auto="matAutocomplete"
+            (optionSelected)="selected($event)"
+          >
+            <mat-option *ngFor="let tag of filteredTags | async" [value]="tag">
+              {{tag}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+      <mat-label style="opacity: 0.7">Text</mat-label>
+      <editor
+        style="border: 1px solid #e0e0e0"
+        apiKey="dapp0qg2rff645p4y81j3kyh76ctgny79dfkab13ljdvpdpi"
+        [init]="tinyConfig"
+        formControlName="text"
+      ></editor>
+    </form>
+  </mat-card>
+  <div *ngIf="!slug">
+    <p class="text-center text-muted py-5">No blog to display</p>
+  </div>
+</div>

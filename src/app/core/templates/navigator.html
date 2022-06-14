@@ -1,0 +1,93 @@
+<div class="p-5">
+  <div
+    class="d-flex justify-content-between flex-wrap align-items-center pt-3 pb-2 border-bottom"
+  >
+    <h1 class="h2">Windows Navigator</h1>
+  </div>
+  <div *ngIf="window_id && !window">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+  <mat-card *ngIf="window" class="container my-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <mat-card-header>
+        <div mat-card-avatar>
+          <mat-icon>window</mat-icon>
+        </div>
+        <mat-card-title>{{window.name}}</mat-card-title>
+        <mat-card-subtitle
+          ><a [href]="iframe_url" target="_blank"
+            >{{iframe_url.changingThisBreaksApplicationSecurity}}</a
+          ></mat-card-subtitle
+        >
+      </mat-card-header>
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="menu"
+        aria-label="Example icon-button with a menu"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="openWindowEditDialog()">
+          <mat-icon>create</mat-icon>
+          <span>Edit Window</span>
+        </button>
+        <button mat-menu-item (click)="openComponentAddDialog()">
+          <mat-icon>add</mat-icon>
+          <span>Add Component</span>
+        </button>
+        <button
+          mat-menu-item
+          [disabled]="!clipboardService.showClipboard()"
+          (click)="paste()"
+        >
+          <mat-icon>content_paste</mat-icon>
+          <span>Paste Component</span>
+        </button>
+        <button
+          mat-menu-item
+          [disabled]="!clipboardService.showClipboard()"
+          (click)="paste(true)"
+        >
+          <mat-icon>flip_to_back</mat-icon>
+          <span>Paste Ref Component</span>
+        </button>
+      </mat-menu>
+    </div>
+    <div>
+      <core-tree [data]="window"></core-tree>
+    </div>
+    <div class="container">
+      <div class="py-5 d-flex justify-content-between">
+        <p class="h2">Preview</p>
+        <mat-slide-toggle
+          color="primary"
+          (change)="iframeOnChange($event)"
+          [(ngModel)]="iframe_toggle"
+          >Mobile Mode</mat-slide-toggle
+        >
+      </div>
+      <div
+        class="d-flex justify-content-center align-items-center"
+        style="height: 800px"
+      >
+        <mat-spinner *ngIf="iframe_loading"></mat-spinner>
+        <iframe
+          [@mobileDesktopIFrame]="iframe_toggle?'mobile':'desktop'"
+          [src]="iframe_url"
+          style="position: absolute; z-index: 1"
+          (load)="iframe_loading = false"
+        ></iframe>
+        <img
+          [@mobileDesktopFrame]="iframe_toggle?'mobile':'desktop'"
+          src="../../../assets/img/{{iframe_modes[iframe_toggle?1:0].frame}}"
+          alt=""
+          style="position: absolute; z-index: 0"
+        />
+      </div>
+    </div>
+  </mat-card>
+  <div *ngIf="!window_id">
+    <p class="text-center text-muted py-5">No window to display</p>
+  </div>
+</div>

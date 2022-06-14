@@ -1,0 +1,28 @@
+<mat-drawer-container class="h-100">
+  <mat-drawer mode="side" class="pt-3" opened>
+    <div id="sidebarMenu" class="d-flex flex-column h-100">
+      <div class="p-2" *ngFor="let item of ITEMS">
+        <a mat-icon-button (click)="onSelect(item, drawer)">
+          <mat-icon color="{{ selectedItem === item ? 'warn' : 'basic' }}">
+            {{ item.icon }}
+          </mat-icon>
+        </a>
+      </div>
+      <div class="mt-auto p-2">
+        <a mat-icon-button (click)="onSignOut()">
+          <mat-icon> power_settings_new </mat-icon>
+        </a>
+      </div>
+    </div>
+  </mat-drawer>
+  <mat-drawer-content>
+    <mat-drawer-container class="h-100">
+      <mat-drawer #drawer mode="side" opened
+        ><core-sidebar [mode]="selectedItem?.link"></core-sidebar
+      ></mat-drawer>
+      <mat-drawer-content>
+        <router-outlet></router-outlet>
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </mat-drawer-content>
+</mat-drawer-container>
